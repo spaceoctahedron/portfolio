@@ -1,0 +1,11 @@
+Model Information:
+* title:	paragraph
+* source:	https://sketchfab.com/3d-models/paragraph-79c60c6f49544b87bfbfa91fd294c96b
+* author:	Marcel Porsiel (https://sketchfab.com/Marcemellow)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "paragraph" (https://sketchfab.com/3d-models/paragraph-79c60c6f49544b87bfbfa91fd294c96b) by Marcel Porsiel (https://sketchfab.com/Marcemellow) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
