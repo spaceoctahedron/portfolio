@@ -144,7 +144,7 @@ import {
   const testimonials = [
     {
       testimonial:
-        "Space architect redefining aerial robotics through radical innovation",
+        "Space architect redefining aerial robotics through disruptive innovation.",
       name: "Younousse Tamekloe",
       designation: "CEO",
       company: "Space Octahedron®",

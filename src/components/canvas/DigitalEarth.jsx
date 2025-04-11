@@ -39,10 +39,52 @@ const samplePoints = (geojson, density = 0.3) => {
 
 // Major cities
 const majorCities = [
-
   { name: "Berlin", lat: 52.52, lon: 13.405 },
-
 ];
+
+// Pulsating Diamond component for Berlin - now 3x larger
+const PulsatingDiamond = ({ position }) => {
+  const meshRef = useRef();
+  // Base scale is 3x larger
+  const baseScale = 3;
+  
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    // Animation cycle of 4 seconds
+    const animationProgress = (t % 4) / 4;
+    
+    // Calculate scale for pulsing effect
+    const animScale = animationProgress <= 0.5 
+      ? 1 - (0.3 * (animationProgress * 2)) 
+      : 0.7 + (0.3 * ((animationProgress - 0.5) * 2));
+    
+    const finalScale = animScale * baseScale;
+    
+    // Calculate horizontal rotation (left to right)
+    // We're rotating around the y-axis now
+    const rotation = animationProgress * Math.PI * 2; // Full 360° rotation
+    
+    if (meshRef.current) {
+      meshRef.current.scale.set(finalScale, finalScale, finalScale);
+      // Apply y-axis rotation for horizontal spinning
+      meshRef.current.rotation.y = rotation;
+    }
+  });
+
+  // Position diamond standing on corner by default
+  // We use an initial rotation to make it stand on one corner
+  return (
+    <mesh 
+      ref={meshRef} 
+      position={position} 
+      // Initial rotation to make diamond stand on one corner relative to Earth
+      rotation={[Math.PI/4, 0, Math.PI/4]}
+    >
+      <boxGeometry args={[0.02, 0.02, 0.02]} />
+      <meshStandardMaterial color="#ea2081" />
+    </mesh>
+  );
+};
 
 const Earth = () => {
   const [dots, setDots] = useState([]);
@@ -92,13 +134,18 @@ const Earth = () => {
         );
       })}
 
-      {/* Major city dots */}
-      {cityPositions.map(({ name, pos }, i) => (
-        <mesh key={name} position={pos}>
-          <sphereGeometry args={[0.015, 8, 8]} />
-          <meshStandardMaterial color="#ea2081" />
-        </mesh>
-      ))}
+      {/* Major city dots - with special diamond for Berlin (now larger) */}
+      {cityPositions.map(({ name, pos }) => {
+        if (name === "Berlin") {
+          return <PulsatingDiamond key={name} position={pos} />;
+        }
+        return (
+          <mesh key={name} position={pos}>
+            <sphereGeometry args={[0.015, 8, 8]} />
+            <meshStandardMaterial color="#ea2081" />
+          </mesh>
+        );
+      })}
     </group>
   );
 };
