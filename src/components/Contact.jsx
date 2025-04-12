@@ -1,6 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import emailjs from "@emailjs/browser";
+import { useForm, ValidationError } from '@formspree/react';
 
 import { styles } from "../styles";
 import { EarthCanvas } from "./canvas";
@@ -8,14 +8,13 @@ import { SectionWrapper } from "../hoc";
 import { slideIn } from "../utils/motion";
 
 const Contact = () => {
-  const formRef = useRef();
   const [form, setForm] = useState({
     name: "",
     email: "",
     message: "",
   });
-  const [gdprConsent, setGdprConsent] = useState(false); // GDPR consent state
-  const [loading, setLoading] = useState(false);
+  const [gdprConsent, setGdprConsent] = useState(false);
+  const [state, handleSubmit] = useForm("manevyyg");
 
   const handleChange = (e) => {
     const { target } = e;
@@ -27,7 +26,7 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
     
     // Check if GDPR consent is given
@@ -36,41 +35,33 @@ const Contact = () => {
       return;
     }
 
-    setLoading(true);
-
-    emailjs
-      .send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        {
-          from_name: form.name,
-          to_name: import.meta.env.VITE_EMAILJS_TO_NAME,
-          from_email: form.email,
-          to_email: import.meta.env.VITE_EMAILJS_TO_EMAIL,
-          message: form.message,
-          gdpr_consent: gdprConsent ? "Yes" : "No" // Include consent status in email
-        },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      )
-      .then(
-        () => {
-          setLoading(false);
-          alert("Thank you. We will get back to you as soon as possible.");
-
-          setForm({
-            name: "",
-            email: "",
-            message: "",
-          });
-          setGdprConsent(false); // Reset consent after submission
-        },
-        (error) => {
-          setLoading(false);
-          console.error(error);
-          alert("Sorry, something went wrong. Please try again.");
-        }
-      );
+    // Handle the form submission with Formspree
+    handleSubmit(e);
   };
+
+  // Show success message when form is successfully submitted
+  if (state.succeeded) {
+    return (
+      <div className={`xl:mt-12 flex xl:flex-row flex-col-reverse gap-10 overflow-hidden`}>
+        <motion.div
+          variants={slideIn("left", "tween", 0.2, 1)}
+          className='flex-[0.75] bg-black-100 p-8 rounded-2xl'
+        >
+          <p className={styles.sectionSubText}>Get in touch</p>
+          <h3 className={styles.sectionHeadText}>Contact</h3>
+          <div className="mt-12 text-white text-lg">
+            <p>Thank you. We will get back to you as soon as possible.</p>
+          </div>
+        </motion.div>
+        <motion.div
+          variants={slideIn("right", "tween", 0.2, 1)}
+          className='xl:flex-1 xl:h-auto md:h-[550px] h-[350px]'
+        >
+          <EarthCanvas />
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className={`xl:mt-12 flex xl:flex-row flex-col-reverse gap-10 overflow-hidden`}>
@@ -82,8 +73,7 @@ const Contact = () => {
         <h3 className={styles.sectionHeadText}>Contact</h3>
 
         <form
-          ref={formRef}
-          onSubmit={handleSubmit}
+          onSubmit={onSubmit}
           className='mt-12 flex flex-col gap-8'
         >
           <label className='flex flex-col'>
@@ -97,6 +87,7 @@ const Contact = () => {
               className='bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium'
               required
             />
+            <ValidationError prefix="Name" field="name" errors={state.errors} className="text-red-500" />
           </label>
           <label className='flex flex-col'>
             <span className='text-white font-medium mb-4'>Your email</span>
@@ -109,6 +100,7 @@ const Contact = () => {
               className='bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium'
               required
             />
+            <ValidationError prefix="Email" field="email" errors={state.errors} className="text-red-500" />
           </label>
           <label className='flex flex-col'>
             <span className='text-white font-medium mb-4'>Your Message</span>
@@ -121,11 +113,13 @@ const Contact = () => {
               className='bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium'
               required
             />
+            <ValidationError prefix="Message" field="message" errors={state.errors} className="text-red-500" />
           </label>
 
           <label className="flex items-center gap-4">
             <input
               type="checkbox"
+              name="gdpr-consent"
               checked={gdprConsent}
               onChange={() => setGdprConsent(!gdprConsent)}
               className="w-5 h-5 accent-[#915eff]"
@@ -135,14 +129,15 @@ const Contact = () => {
               GDPR Agreement *<br />
               I consent to having this website store my submitted information so they can respond to my inquiry.
             </span>
+            <ValidationError prefix="GDPR Consent" field="gdpr-consent" errors={state.errors} className="text-red-500" />
           </label>
 
           <button
             type='submit'
             className='bg-tertiary py-3 px-8 rounded-xl outline-none w-fit text-white font-bold shadow-md shadow-primary'
-            disabled={loading}
+            disabled={state.submitting}
           >
-            {loading ? "Sending..." : "Send"}
+            {state.submitting ? "Sending..." : "Send"}
           </button>
         </form>
       </motion.div>

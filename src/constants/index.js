@@ -4,6 +4,8 @@ import {
     creator,
     web,
 
+    dpma,
+
     spaceoctahedron,
     ceoyounoussetamekloe,
     benchtest,
@@ -83,7 +85,7 @@ import {
     {
       title: "Company Formation",
       company_name: "",
-      icon: spaceoctahedron,
+      icon: dpma,
       iconBg: "#E6DEDD",
       date: "March 2022",
       points: [

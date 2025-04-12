@@ -14,7 +14,7 @@ const Hero = () => {
         </div>
         <div>
           <h1 className={`${styles.heroHeadText} text-white`}>
-          Hello! <span className="text-[#915eff]">Welcome</span></h1>
+          Introduction </h1>
           <p className={`${styles.heroSubText} mt-2 text-white-100`}>
           Space Octahedron® is a German company with a global outreach that 
           develops, manufactures, and distributes drone technologies 
