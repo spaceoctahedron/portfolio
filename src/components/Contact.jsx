@@ -1,11 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useForm, ValidationError } from '@formspree/react';
+import { useForm, ValidationError } from "@formspree/react";
 
 import { styles } from "../styles";
 import { EarthCanvas } from "./canvas";
 import { SectionWrapper } from "../hoc";
 import { slideIn } from "../utils/motion";
+
+// Timer Countdown Component
+const CountdownTimer = () => {
+  const [time, setTime] = useState({ hours: 24, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setTime((prevTime) => {
+        let { hours, minutes, seconds } = prevTime;
+        if (seconds > 0) {
+          seconds -= 1;
+        } else {
+          if (minutes > 0) {
+            minutes -= 1;
+            seconds = 59;
+          } else {
+            if (hours > 0) {
+              hours -= 1;
+              minutes = 59;
+              seconds = 59;
+            }
+          }
+        }
+        return { hours, minutes, seconds };
+      });
+    }, 1000);
+
+    // Clean up the interval on unmount
+    return () => clearInterval(timerId);
+  }, []);
+
+  return (
+    <div className="timer-container flex justify-center items-center mt-20">
+      <div className="flex items-center text-[#ffffff] text-6xl font-mono space-x-2">
+        <div className="flex justify-center items-center w-16">{String(time.hours).padStart(2, "0")}</div>
+        <div className="flex justify-center items-center w-8">:</div>
+        <div className="flex justify-center items-center w-16">{String(time.minutes).padStart(2, "0")}</div>
+        <div className="flex justify-center items-center w-8">:</div>
+        <div className="flex justify-center items-center w-16">{String(time.seconds).padStart(2, "0")}</div>
+      </div>
+    </div>
+  );
+};
+
+
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -15,6 +60,7 @@ const Contact = () => {
   });
   const [gdprConsent, setGdprConsent] = useState(false);
   const [state, handleSubmit] = useForm("manevyyg");
+  const [showTimer, setShowTimer] = useState(false);
 
   const handleChange = (e) => {
     const { target } = e;
@@ -28,7 +74,7 @@ const Contact = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    
+
     // Check if GDPR consent is given
     if (!gdprConsent) {
       alert("Please agree to the GDPR terms before submitting.");
@@ -37,6 +83,7 @@ const Contact = () => {
 
     // Handle the form submission with Formspree
     handleSubmit(e);
+    setShowTimer(true); // Start showing the timer after form submission
   };
 
   // Show success message when form is successfully submitted
@@ -50,7 +97,8 @@ const Contact = () => {
           <p className={styles.sectionSubText}>Get in touch</p>
           <h3 className={styles.sectionHeadText}>Contact</h3>
           <div className="mt-12 text-white text-lg">
-            <p>Thank you. We will get back to you as soon as possible.</p>
+            <p>Thank you, {form.name}. We will get back to you via <span style={{ color: '#52bcff' }}>{form.email}</span> within 24 hours.</p>
+            {showTimer && <CountdownTimer />} {/* Show countdown timer after submission */}
           </div>
         </motion.div>
         <motion.div
