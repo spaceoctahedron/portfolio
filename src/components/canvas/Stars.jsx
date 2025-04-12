@@ -5,50 +5,65 @@ import * as random from "maath/random/dist/maath-random.esm";
 import * as THREE from "three";
 
 const vertexShader = /* glsl */ `
-attribute float aPhase;
-uniform float uTime;
-varying float vOpacity;
+  attribute float aPhase;
+  attribute float aColorMix;
 
-void main() {
-  float rawShimmer = 0.5 + 0.5 * sin(uTime * 2.0 + aPhase * 10.0);
-  vOpacity = mix(0.3, 1.0, rawShimmer); 
+  uniform float uTime;
 
-  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = 2.5; // increased from 1.5
-  gl_Position = projectionMatrix * mvPosition;
-}
+  varying float vOpacity;
+  varying float vColorMix;
+
+  void main() {
+    float rawShimmer = 0.5 + 0.5 * sin(uTime * 2.0 + aPhase * 10.0);
+    vOpacity = mix(0.5, 1.0, rawShimmer); // keep visible
+    vColorMix = aColorMix;
+
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = 2.5;
+    gl_Position = projectionMatrix * mvPosition;
+  }
 `;
 
 const fragmentShader = /* glsl */ `
   varying float vOpacity;
+  varying float vColorMix;
 
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
 
-    gl_FragColor = vec4(vec3(1.0), vOpacity);
+    vec3 white = vec3(1.0);
+    vec3 purple = vec3(0.545, 0.463, 0.913); // #8b76e9
+
+    vec3 finalColor = mix(white, purple, vColorMix);
+    gl_FragColor = vec4(finalColor, vOpacity);
   }
+
 `;
 
 const Stars = () => {
   const pointsRef = useRef();
   const numPoints = 8000;
 
-  const { positions, phases } = useMemo(() => {
+  const { positions, phases, colorMixes } = useMemo(() => {
     const pos = random.inSphere(new Float32Array(numPoints), { radius: 1.2 });
     const phase = new Float32Array(numPoints / 3);
+    const mix = new Float32Array(numPoints / 3);
     for (let i = 0; i < phase.length; i++) {
       phase[i] = Math.random();
+      mix[i] = Math.random(); // blend factor for custom color
     }
-    return { positions: pos, phases: phase };
+    return { positions: pos, phases: phase, colorMixes: mix };
   }, []);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setAttribute("aPhase", new THREE.BufferAttribute(phases, 1));
+    geo.setAttribute("aColorMix", new THREE.BufferAttribute(colorMixes, 1));
+
     return geo;
-  }, [positions, phases]);
+  }, [positions, phases, colorMixes]);
 
   const material = useRef();
   const uniforms = useMemo(
