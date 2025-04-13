@@ -5,26 +5,26 @@ import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
 import CanvasLoader from "../Loader";
 
 const Model3D = ({ isMobile }) => {
-  const model = useGLTF("./helicopter/scene.gltf");
-  const SCALE_FACTOR = 5.5;
+  const model = useGLTF("./octa-01/scene.gltf");
+  const SCALE_FACTOR =400;
 
   return (
     <mesh>
-      <hemisphereLight intensity={0.15 * SCALE_FACTOR * 2} groundColor='black' />
+      <hemisphereLight intensity={0.15 * 2} groundColor='black' />
       <spotLight
         position={[-20, 50, 10]}
         angle={0.12}
         penumbra={1}
-        intensity={1 * SCALE_FACTOR * 2}
+        intensity={1 * SCALE_FACTOR * 10 }
         castShadow
         shadow-mapSize={1024}
       />
-      <pointLight intensity={1 * SCALE_FACTOR * 2} />
+      <pointLight intensity={1 * SCALE_FACTOR * 0.01} />
       <primitive
         object={model.scene}
         scale={isMobile ? 0.7 * SCALE_FACTOR : 0.75 * SCALE_FACTOR}
         position={isMobile ? [0, -3, -2.2] : [0, -3.25, -1.5]}
-        rotation={[-0.01, -0.2, -0.1]}
+        rotation={[-Math.PI / 2, 0, 0]}
       />
     </mesh>
   );
