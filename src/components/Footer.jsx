@@ -33,7 +33,7 @@ const Footer = () => {
           {/* Desktop version: copyright + legal links inline */}
           <div className="hidden sm:flex justify-between items-center w-full">
             <div className="flex items-center">
-              <p className="text-white font-bold text-[14px] mr-2">
+              <p className="text-white font-bold text-[16px] mr-2">
                 {footerInfo.copyright}
               </p>
               <p className="text-secondary text-[14px]">
@@ -65,7 +65,7 @@ const Footer = () => {
                 {footerLinks[1].title}
               </Link>
             </div>
-            <p className="text-white font-bold text-[14px]">{footerInfo.copyright}</p>
+            <p className="text-white font-bold text-[16px]">{footerInfo.copyright}</p>
             <p className="text-secondary text-[14px]">{footerInfo.rightsText}</p>
           </div>
         </div>
