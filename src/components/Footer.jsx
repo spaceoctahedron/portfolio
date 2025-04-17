@@ -28,41 +28,48 @@ const Footer = () => {
         </div>
         <div className="w-full h-px bg-gray-700 my-4" />
         {/* Second line with copyright on left and legal links on right */}
-        <div className="flex justify-between items-center w-full">
-          <div className="flex items-center">
-            <p className="text-white font-bold text-[16px] mr-2">
-              {footerInfo.copyright}
-            </p>
-            <p className="text-secondary text-[14px]">
-              | {footerInfo.rightsText}.
-            </p>
+        {/* Second line */}
+        <div className="w-full">
+          {/* Desktop version: copyright + legal links inline */}
+          <div className="hidden sm:flex justify-between items-center w-full">
+            <div className="flex items-center">
+              <p className="text-white font-bold text-[14px] mr-2">
+                {footerInfo.copyright}
+              </p>
+              <p className="text-secondary text-[14px]">
+                | {footerInfo.rightsText}
+              </p>
+            </div>
+
+            <div className="flex flex-row gap-6">
+              {footerLinks.map((link) => (
+                <Link 
+                  key={link.id}
+                  to={link.url} 
+                  className="text-secondary hover:text-white text-[14px] transition-colors"
+                >
+                  {link.title}
+                </Link>
+              ))}
+            </div>
           </div>
-          
-          <div className="hidden sm:flex flex-row gap-6">
-            {footerLinks.map((link) => (
-              <Link 
-                key={link.id}
-                to={link.url} 
-                className="text-secondary hover:text-white text-[14px] transition-colors"
-              >
-                {link.title}
+
+          {/* Mobile version: stacked legal info */}
+          <div className="sm:hidden mt-2 text-center space-y-1">
+            <div className="flex justify-center items-center space-x-2 text-[14px] text-secondary">
+              <Link to={footerLinks[0].url} className="hover:text-white transition-colors">
+                {footerLinks[0].title}
               </Link>
-            ))}
-          </div>
-          
-          {/* Mobile version for legal links */}
-          <div className="sm:hidden flex gap-4">
-            {footerLinks.map((link) => (
-              <Link 
-                key={link.id}
-                to={link.url} 
-                className="text-secondary hover:text-white text-[12px] transition-colors"
-              >
-                {link.title}
+              <span>•</span>
+              <Link to={footerLinks[1].url} className="hover:text-white transition-colors">
+                {footerLinks[1].title}
               </Link>
-            ))}
+            </div>
+            <p className="text-white font-bold text-[14px]">{footerInfo.copyright}</p>
+            <p className="text-secondary text-[14px]">{footerInfo.rightsText}</p>
           </div>
         </div>
+
       </div>
     </footer>
   );
