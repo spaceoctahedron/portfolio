@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import * as d3 from "d3-geo";
@@ -89,6 +89,11 @@ const PulsatingDiamond = ({ position }) => {
 const Earth = () => {
   const [dots, setDots] = useState([]);
   const earthRef = useRef();
+  const earthTexture = useLoader(
+    THREE.TextureLoader,
+    "https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg"
+  );
+  
 
   useFrame(() => {
     if (earthRef.current) earthRef.current.rotation.y += 0.0015;
@@ -127,7 +132,11 @@ const Earth = () => {
       {/* Earth solid sphere with dark fill */}
       <mesh>
         <sphereGeometry args={[1, 64, 64]} />
-        <meshStandardMaterial color="#0a0a0a" /> {/* Dark fill */}
+        <meshStandardMaterial map={earthTexture} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[1, 64, 64]} />
+        <meshStandardMaterial color="#0a0a0a" transparent opacity={0.8}/> {/* Dark fill */}
       </mesh>
 
       {/* Atmospheric Glow */}
