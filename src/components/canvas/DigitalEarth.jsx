@@ -1,8 +1,28 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
 import * as d3 from "d3-geo";
+
+// Lighten a hex color by a percentage
+const lightenColor = (hex, percent) => {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = ((num >> 8) & 0x00FF) + amt;
+  const B = (num & 0x0000FF) + amt;
+  return (
+    "#" +
+    (
+      0x1000000 +
+      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    )
+      .toString(16)
+      .slice(1)
+  );
+};
 
 // Converts lat/lon to 3D vector
 const latLongToVector3 = (lat, lon, radius = 1) => {
@@ -12,6 +32,16 @@ const latLongToVector3 = (lat, lon, radius = 1) => {
   const z = radius * Math.sin(phi) * Math.sin(theta);
   const y = radius * Math.cos(phi);
   return new THREE.Vector3(x, y, z);
+};
+
+// Calculate text offset based on latitude
+const getTextOffset = (lat) => {
+  // For near-equator locations (between -30 and 30 degrees), push text up more
+  if (Math.abs(lat) < 30) return 0.15;
+  // For mid-latitudes, moderate offset
+  if (Math.abs(lat) < 60) return 0.1;
+  // For polar regions, small offset
+  return 0.05;
 };
 
 // Sample points from GeoJSON
@@ -44,9 +74,13 @@ const majorCities = [
 ];
 
 // Pulsating Diamond component for office locations
-const PulsatingDiamond = ({ position, color = "#ea2081" }) => {
+const PulsatingDiamond = ({ position, color = "#ea2081", name, setActiveCity, lat }) => {
   const meshRef = useRef();
   const baseScale = 3;
+  const [hovered, setHovered] = useState(false);
+  const textOffset = getTextOffset(lat);
+
+  const displayColor = hovered ? lightenColor(color, 10) : color;
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
@@ -66,19 +100,56 @@ const PulsatingDiamond = ({ position, color = "#ea2081" }) => {
   });
 
   return (
-    <mesh 
-      ref={meshRef} 
-      position={position} 
-      rotation={[Math.PI/4, 0, Math.PI/4]}
-    >
-      <boxGeometry args={[0.02, 0.02, 0.02]} />
-      <meshStandardMaterial color={color} />
-    </mesh>
+    <group>
+      <mesh 
+        ref={meshRef} 
+        position={position} 
+        rotation={[Math.PI/4, 0, Math.PI/4]}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          setActiveCity(name);
+        }}
+        onPointerOut={(e) => {
+          e.stopPropagation();
+          setHovered(false);
+          setActiveCity(null);
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveCity(name === activeCity ? null : name);
+        }}
+      >
+        <boxGeometry args={[0.02, 0.02, 0.02]} />
+        <meshStandardMaterial 
+          color={displayColor} 
+          emissive={displayColor} 
+          emissiveIntensity={0.4} 
+        />
+      </mesh>
+
+      {hovered && (
+        <Text
+          position={position.clone().normalize().multiplyScalar(1.1)}
+          fontSize={0.05}
+          color={color} // original color
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.002}
+          outlineColor="#000000"
+          outlineOpacity={0.8}
+        >
+          {name}
+        </Text>
+      )}
+    </group>
   );
 };
 
+
 const Earth = () => {
   const [dots, setDots] = useState([]);
+  const [activeCity, setActiveCity] = useState(null);
   const earthRef = useRef();
   const earthTexture = useLoader(
     THREE.TextureLoader,
@@ -176,9 +247,37 @@ const Earth = () => {
       })}
 
       {/* Office locations */}
-      {cityPositions.map(({ name, pos, color }) => (
-        <PulsatingDiamond key={name} position={pos} color={color} />
+      {cityPositions.map(({ name, pos, color, lat }) => (
+        <PulsatingDiamond 
+          key={name} 
+          position={pos} 
+          color={color} 
+          name={name}
+          setActiveCity={setActiveCity}
+          lat={lat}
+        />
       ))}
+
+      {/* Persistent city name when clicked */}
+      {activeCity && (
+        cityPositions.filter(city => city.name === activeCity).map(city => {
+          return (
+            <Text
+              key={city.name}
+              position={city.pos.clone().normalize().multiplyScalar(1.1)} // Push label away from sphere and marker
+              fontSize={0.05}
+              color="white"
+              anchorX="center"
+              anchorY="bottom"
+              outlineWidth={0.005}
+              outlineColor="#000000"
+              outlineOpacity={0.8}
+            >
+              {city.name}
+            </Text>
+          );
+        })
+      )}
     </group>
   );
 };
