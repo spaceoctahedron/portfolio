@@ -12,8 +12,7 @@ const ProjectCard = ({
   name,
   description,
   tags,
-  image,
-  source_code_link,
+  image
 }) => {
   return (
     <motion.div variants={fadeIn("up", "spring", index * 0.5, 0.75)}>
@@ -68,10 +67,10 @@ const Works = () => {
           variants={fadeIn("", "", 0.1, 1)}
           className='mt-3 text-secondary text-[17px] max-w-3xl leading-[30px]'
         >
-          Following products are currently in development. The electric motor is 
-          already in the certification phase and is expected to be available for
-          purchase in the first quarter of 2026. The drones are expected to be available
-          for purchase in the first quarter of 2028. 
+          The following products are currently in development. 
+          The electric motor is in the certification phase and 
+          is expected to be available for purchase in Q3 2026. 
+          The drones are anticipated to launch in Q1 2028. 
         </motion.p>
       </div>
 
