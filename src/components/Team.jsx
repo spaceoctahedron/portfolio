@@ -36,7 +36,7 @@ const FeedbackCard = ({
         <img
           src={image}
           alt={`feedback_by-${name}`}
-          className='w-20 h-120 rounded-full object-cover'
+          className='w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover'
         />
       </div>
     </div>
