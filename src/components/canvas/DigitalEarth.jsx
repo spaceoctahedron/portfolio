@@ -37,51 +37,42 @@ const samplePoints = (geojson, density = 0.3) => {
   return points.filter((_, i) => i % Math.floor(1 / density) === 0);
 };
 
-// Corporate headquarters
+// Office locations
 const majorCities = [
-  { name: "Berlin", lat: 52.52, lon: 13.405 },
+  { name: "Berlin", lat: 52.52, lon: 13.405, color: "#ea2081" },
+  { name: "Lomé", lat: 6.1319, lon: 1.2220, color: "#8b76e9" },
 ];
 
-// Pulsating Diamond component for Berlin 
-const PulsatingDiamond = ({ position }) => {
+// Pulsating Diamond component for office locations
+const PulsatingDiamond = ({ position, color = "#ea2081" }) => {
   const meshRef = useRef();
-  // Base scale is 3x larger
   const baseScale = 3;
-  
+
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    // Animation cycle of 4 seconds
     const animationProgress = (t % 4) / 4;
-    
-    // Calculate scale for pulsing effect
+
     const animScale = animationProgress <= 0.5 
       ? 1 - (0.3 * (animationProgress * 2)) 
       : 0.7 + (0.3 * ((animationProgress - 0.5) * 2));
-    
+
     const finalScale = animScale * baseScale;
-    
-    // Calculate horizontal rotation (left to right)
-    // We're rotating around the y-axis now
-    const rotation = animationProgress * Math.PI * 2; // Full 360° rotation
-    
+    const rotation = animationProgress * Math.PI * 2;
+
     if (meshRef.current) {
       meshRef.current.scale.set(finalScale, finalScale, finalScale);
-      // Apply y-axis rotation for horizontal spinning
       meshRef.current.rotation.y = rotation;
     }
   });
 
-  // Position diamond standing on corner by default
-  // We use an initial rotation to make it stand on one corner
   return (
     <mesh 
       ref={meshRef} 
       position={position} 
-      // Initial rotation to make diamond stand on one corner relative to Earth
       rotation={[Math.PI/4, 0, Math.PI/4]}
     >
       <boxGeometry args={[0.02, 0.02, 0.02]} />
-      <meshStandardMaterial color="#ea2081" />
+      <meshStandardMaterial color={color} />
     </mesh>
   );
 };
@@ -93,7 +84,6 @@ const Earth = () => {
     THREE.TextureLoader,
     "https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg"
   );
-  
 
   useFrame(() => {
     if (earthRef.current) earthRef.current.rotation.y += 0.0015;
@@ -119,12 +109,11 @@ const Earth = () => {
     fetchGeo();
   }, []);
 
-  // Memoize city positions
   const cityPositions = useMemo(() => {
-    return majorCities.map((city) => ({
-      ...city,
-      pos: latLongToVector3(city.lat, city.lon, 1.01),
-    }));
+    return majorCities.map((city) => {
+      const pos = latLongToVector3(city.lat, city.lon, 1.01);
+      return { ...city, pos };
+    });
   }, []);
 
   return (
@@ -186,18 +175,10 @@ const Earth = () => {
         );
       })}
 
-      {/* Major city dots - with special diamond for Berlin */}
-      {cityPositions.map(({ name, pos }) => {
-        if (name === "Berlin") {
-          return <PulsatingDiamond key={name} position={pos} />;
-        }
-        return (
-          <mesh key={name} position={pos}>
-            <sphereGeometry args={[0.015, 8, 8]} />
-            <meshStandardMaterial color="#ea2081" />
-          </mesh>
-        );
-      })}
+      {/* Office locations */}
+      {cityPositions.map(({ name, pos, color }) => (
+        <PulsatingDiamond key={name} position={pos} color={color} />
+      ))}
     </group>
   );
 };
@@ -213,7 +194,6 @@ const EarthCanvas = () => {
       }}
       gl={{ antialias: true }}
     >
-
       <ambientLight intensity={0.5} />
       <directionalLight position={[5, 3, 5]} intensity={1} />
       <OrbitControls
