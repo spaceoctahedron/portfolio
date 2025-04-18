@@ -38,8 +38,8 @@ const CountdownTimer = () => {
   }, []);
 
   return (
-    <div className="timer-container flex justify-center items-center mt-20">
-      <div className="flex items-center text-[#ffffff] text-6xl font-mono space-x-2">
+    <div className="timer-container flex justify-center items-center mt-12 sm:mt-20">
+      <div className="flex items-center text-[#ffffff] text-5xl sm:text-6xl font-mono space-x-2 scale-[0.7] sm:scale-100">
         <div className="flex justify-center items-center w-16">{String(time.hours).padStart(2, "0")}</div>
         <div className="flex justify-center items-center w-8">:</div>
         <div className="flex justify-center items-center w-16">{String(time.minutes).padStart(2, "0")}</div>
@@ -49,8 +49,6 @@ const CountdownTimer = () => {
     </div>
   );
 };
-
-
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -96,8 +94,8 @@ const Contact = () => {
         >
           <p className={styles.sectionSubText}>Get in touch</p>
           <h3 className={styles.sectionHeadText}>Contact</h3>
-          <div className="mt-12 text-white text-lg">
-            <p>Thank you, {form.name}. We will get back to you via <span style={{ color: '#52bcff' }}>{form.email}</span> within 24 hours.</p>
+          <div className="mt-12 text-white text-base sm:text-lg">
+            <p className="break-words whitespace-normal">Thank you, {form.name}. We will get back to you via <span style={{ color: '#52bcff' }}>{form.email}</span> within 24 hours.</p>
             {showTimer && <CountdownTimer />} {/* Show countdown timer after submission */}
           </div>
         </motion.div>
