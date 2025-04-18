@@ -1,4 +1,4 @@
-import { EarthCanvas, Model3DCanvas, StarsCanvas } from './canvas';
+import { EarthCanvas, Model3DCanvas, StarsCanvas, AnimatedLinesCanvas } from './canvas';
 import Hero from './Hero';
 import Navbar from './Navbar';
 import About from './About';
@@ -22,4 +22,5 @@ export {
   StarsCanvas,
   Footer,
   ScrollToHash,
+  AnimatedLinesCanvas
 }

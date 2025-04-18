@@ -1,21 +1,29 @@
-import React, { Suspense, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
 
 import CanvasLoader from "../Loader";
 
 const Model3D = ({ isMobile }) => {
   const model = useGLTF("./octa-01/scene.gltf");
-  const SCALE_FACTOR =400;
+  const SCALE_FACTOR = 400;
+  const modelRef = useRef();
+
+  // Slow rotation
+  useFrame((state, delta) => {
+    if (modelRef.current) {
+      modelRef.current.rotation.y += delta * 0.08; // Adjust speed here (0.2 = slow)
+    }
+  });
 
   return (
-    <mesh>
+    <mesh ref={modelRef}>
       <hemisphereLight intensity={0.15 * 2} groundColor='black' />
       <spotLight
         position={[-20, 50, 10]}
         angle={0.12}
         penumbra={1}
-        intensity={1 * SCALE_FACTOR * 10 }
+        intensity={1 * SCALE_FACTOR * 10}
         castShadow
         shadow-mapSize={1024}
       />
@@ -34,21 +42,12 @@ const Model3DCanvas = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Add a listener for changes to the screen size
     const mediaQuery = window.matchMedia("(max-width: 500px)");
-
-    // Set the initial value of the `isMobile` state variable
     setIsMobile(mediaQuery.matches);
-
-    // Define a callback function to handle changes to the media query
     const handleMediaQueryChange = (event) => {
       setIsMobile(event.matches);
     };
-
-    // Add the callback function as a listener for changes to the media query
     mediaQuery.addEventListener("change", handleMediaQueryChange);
-
-    // Remove the listener when the component is unmounted
     return () => {
       mediaQuery.removeEventListener("change", handleMediaQueryChange);
     };
@@ -56,7 +55,7 @@ const Model3DCanvas = () => {
 
   return (
     <Canvas
-      frameloop='demand'
+      frameloop='always'
       shadows
       dpr={[1, 2]}
       camera={{ position: [20, 3, 5], fov: 25 }}

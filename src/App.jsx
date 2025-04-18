@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { About, Contact, Milestones, Hero, Navbar, Works, Team, StarsCanvas, Footer, ScrollToHash } from './components';
+import { About, Contact, Milestones, Hero, Navbar, Works, Team, StarsCanvas, Footer, ScrollToHash, AnimatedLinesCanvas } from './components';
 import Legal from './pages/Legal';
 import Privacy from './pages/Privacy'; 
 
@@ -11,8 +11,9 @@ const App = () => {
         <Routes>
           <Route path="/" element={
             <>
-              <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
+              <div className="relative z-0">
                 <Hero />
+                <AnimatedLinesCanvas /> {/* Render the AnimatedLinesCanvas behind */}
               </div>
               <About />
               <Milestones />
