@@ -37,12 +37,12 @@ const samplePoints = (geojson, density = 0.3) => {
   return points.filter((_, i) => i % Math.floor(1 / density) === 0);
 };
 
-// Major cities
+// Corporate headquarters
 const majorCities = [
   { name: "Berlin", lat: 52.52, lon: 13.405 },
 ];
 
-// Pulsating Diamond component for Berlin - now 3x larger
+// Pulsating Diamond component for Berlin 
 const PulsatingDiamond = ({ position }) => {
   const meshRef = useRef();
   // Base scale is 3x larger
@@ -102,6 +102,13 @@ const Earth = () => {
       const data = await res.json();
       const sampled = samplePoints(data, 0.1); // smaller = more dots
       setDots(sampled);
+
+      // Rotate Earth so Berlin (13.405°E) is centered at the front
+      if (earthRef.current) {
+        const berlinLongitude = 13.405;
+        const rotationRadians = THREE.MathUtils.degToRad(berlinLongitude - 90);
+        earthRef.current.rotation.y = rotationRadians;
+      }
     };
 
     fetchGeo();
@@ -123,6 +130,42 @@ const Earth = () => {
         <meshStandardMaterial color="#0a0a0a" /> {/* Dark fill */}
       </mesh>
 
+      {/* Atmospheric Glow */}
+      <mesh>
+        <sphereGeometry args={[1.08, 64, 64]} />
+        <meshPhongMaterial
+          color="#52bcff"
+          transparent
+          opacity={0.08} // very soft
+          shininess={0.0}
+          emissive="#52bcff"
+          emissiveIntensity={0.5}
+          side={THREE.BackSide}
+        />
+      </mesh>
+
+      <mesh>
+        <sphereGeometry args={[1.08, 64, 64]} />
+        <shaderMaterial
+          transparent
+          side={THREE.BackSide}
+          vertexShader={`
+            varying vec3 vNormal;
+            void main() {
+              vNormal = normalize(normalMatrix * normal);
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `}
+          fragmentShader={`
+            varying vec3 vNormal;
+            void main() {
+              float intensity = pow(0.6 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 4.0);
+              gl_FragColor = vec4(0.32, 0.74, 1.0, intensity * 0.35); // #52bcff with fade
+            }
+          `}
+        />
+      </mesh>
+
       {/* Dots on coastlines */}
       {dots.map(({ lat, lon }, i) => {
         const pos = latLongToVector3(lat, lon, 1.01);
@@ -134,7 +177,7 @@ const Earth = () => {
         );
       })}
 
-      {/* Major city dots - with special diamond for Berlin (now larger) */}
+      {/* Major city dots - with special diamond for Berlin */}
       {cityPositions.map(({ name, pos }) => {
         if (name === "Berlin") {
           return <PulsatingDiamond key={name} position={pos} />;
@@ -159,10 +202,17 @@ const EarthCanvas = () => {
         far: 100,
         position: [2, 2, 3],
       }}
+      gl={{ antialias: true }}
     >
+
       <ambientLight intensity={0.5} />
       <directionalLight position={[5, 3, 5]} intensity={1} />
-      <OrbitControls enableZoom={false} />
+      <OrbitControls
+        enableZoom={false}
+        enablePan={false}
+        minPolarAngle={Math.PI / 2}  // Lock vertical rotation
+        maxPolarAngle={Math.PI / 2}
+      />
       <Earth />
     </Canvas>
   );
